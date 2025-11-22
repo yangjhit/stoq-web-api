@@ -3,7 +3,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class CompanyResponseDTO {
+public class ClusterResponseDTO {
     
     private Long id;
     private String name;

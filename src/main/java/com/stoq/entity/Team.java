@@ -21,12 +21,12 @@ public class Team {
     @Column(length = 1000)
     private String description; // 团队描述
     
-    @Column(nullable = false)
-    private Long companyId; // 所属公司ID
+    @Column(name = "clusterId", nullable = false)
+    private Long clusterId; // 所属集群ID
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "companyId", insertable = false, updatable = false)
-    private Company company;
+    @JoinColumn(name = "clusterId", insertable = false, updatable = false)
+    private Cluster cluster;
     
     @Column(nullable = false, length = 100)
     private String creatorEmail; // 创建者邮箱

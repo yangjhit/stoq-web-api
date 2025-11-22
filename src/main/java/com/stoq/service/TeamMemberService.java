@@ -4,11 +4,9 @@ import com.stoq.dto.CreateTeamMemberDTO;
 import com.stoq.dto.TeamMemberResponseDTO;
 import com.stoq.entity.Team;
 import com.stoq.entity.TeamMember;
-import com.stoq.entity.User;
 import com.stoq.exception.ResourceNotFoundException;
 import com.stoq.repository.TeamMemberRepository;
 import com.stoq.repository.TeamRepository;
-import com.stoq.repository.UserRepository;
 import com.stoq.util.PermissionUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +21,6 @@ public class TeamMemberService {
     
     private final TeamMemberRepository teamMemberRepository;
     private final TeamRepository teamRepository;
-    private final UserRepository userRepository;
     private final PermissionUtil permissionUtil;
     
     /**
@@ -37,7 +34,7 @@ public class TeamMemberService {
                 .orElseThrow(() -> new ResourceNotFoundException("Team not found: " + dto.getTeamId()));
         
         // 验证用户是否有权限(仅ADMIN)
-        permissionUtil.verifyCompanyAdmin(team.getCompanyId(), creatorEmail);
+        permissionUtil.verifyClusterAdmin(team.getClusterId(), creatorEmail);
         
         // 检查邮箱是否全局唯一
         if (teamMemberRepository.findByEmail(dto.getEmail()).isPresent()) {
@@ -71,8 +68,8 @@ public class TeamMemberService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new ResourceNotFoundException("Team not found: " + teamId));
         
-        // 验证用户是否是公司成员
-        permissionUtil.verifyCompanyMember(team.getCompanyId(), userEmail);
+        // 验证用户是否是集群成员
+        permissionUtil.verifyClusterMember(team.getClusterId(), userEmail);
         
         List<TeamMember> members = teamMemberRepository.findByTeamId(teamId);
         return members.stream()
@@ -90,8 +87,8 @@ public class TeamMemberService {
         Team team = teamRepository.findById(member.getTeamId())
                 .orElseThrow(() -> new ResourceNotFoundException("Team not found"));
         
-        // 验证用户是否是公司成员
-        permissionUtil.verifyCompanyMember(team.getCompanyId(), userEmail);
+        // 验证用户是否是集群成员
+        permissionUtil.verifyClusterMember(team.getClusterId(), userEmail);
         
         return toResponseDTO(member, team.getName());
     }
@@ -108,7 +105,7 @@ public class TeamMemberService {
                 .orElseThrow(() -> new ResourceNotFoundException("Team not found"));
         
         // 验证用户是否有权限(仅ADMIN)
-        permissionUtil.verifyCompanyAdmin(team.getCompanyId(), userEmail);
+        permissionUtil.verifyClusterAdmin(team.getClusterId(), userEmail);
         
         // 检查邮箱是否被其他成员使用
         if (!member.getEmail().equals(dto.getEmail())) {
@@ -145,7 +142,7 @@ public class TeamMemberService {
                 .orElseThrow(() -> new ResourceNotFoundException("Team not found"));
         
         // 验证用户是否有权限(仅ADMIN)
-        permissionUtil.verifyCompanyAdmin(team.getCompanyId(), userEmail);
+        permissionUtil.verifyClusterAdmin(team.getClusterId(), userEmail);
         
         teamMemberRepository.delete(member);
     }

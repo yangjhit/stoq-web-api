@@ -9,8 +9,8 @@ public class StoqResponseDTO {
     private String name;
     private String description;
     private String administrator;
-    private Long companyId;
-    private String companyName; // 公司名称
+    private Long clusterId;
+    private String clusterName;
     private String creatorEmail;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

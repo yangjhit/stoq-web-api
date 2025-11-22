@@ -1,10 +1,10 @@
 package com.stoq.service;
 import com.stoq.dto.CreateProductCategoryDTO;
 import com.stoq.dto.ProductCategoryResponseDTO;
-import com.stoq.entity.Company;
+import com.stoq.entity.Cluster;
 import com.stoq.entity.ProductCategory;
 import com.stoq.exception.ResourceNotFoundException;
-import com.stoq.repository.CompanyRepository;
+import com.stoq.repository.ClusterRepository;
 import com.stoq.repository.ProductCategoryRepository;
 import com.stoq.util.PermissionUtil;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class ProductCategoryService {
     
     private final ProductCategoryRepository productCategoryRepository;
-    private final CompanyRepository companyRepository;
+    private final ClusterRepository clusterRepository;
     private final PermissionUtil permissionUtil;
     
     /**
@@ -27,44 +27,44 @@ public class ProductCategoryService {
      */
     @Transactional
     public ProductCategoryResponseDTO createProductCategory(CreateProductCategoryDTO dto, String creatorEmail) {
-        // 验证公司是否存在
-        Company company = companyRepository.findById(dto.getCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company not found: " + dto.getCompanyId()));
+        // 验证集群是否存在
+        Cluster cluster = clusterRepository.findById(dto.getClusterId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cluster not found: " + dto.getClusterId()));
         
         // 验证用户是否有权限(仅ADMIN)
-        permissionUtil.verifyCompanyAdmin(dto.getCompanyId(), creatorEmail);
+        permissionUtil.verifyClusterAdmin(dto.getClusterId(), creatorEmail);
         
-        // 检查分类名称是否已存在(在公司内唯一)
-        if (productCategoryRepository.findByCompanyIdAndName(dto.getCompanyId(), dto.getName()).isPresent()) {
-            throw new IllegalArgumentException("Category name already exists in this company");
+        // 检查分类名称是否已存在(在集群内唯一)
+        if (productCategoryRepository.findByClusterIdAndName(dto.getClusterId(), dto.getName()).isPresent()) {
+            throw new IllegalArgumentException("Category name already exists in this cluster");
         }
         
         // 创建分类
         ProductCategory category = new ProductCategory();
-        category.setCompanyId(dto.getCompanyId());
+        category.setClusterId(dto.getClusterId());
         category.setName(dto.getName());
         category.setDescription(dto.getDescription());
         category.setImage(dto.getImage());
         category.setCreatorEmail(creatorEmail);
         
         ProductCategory savedCategory = productCategoryRepository.save(category);
-        return toResponseDTO(savedCategory, company.getName());
+        return toResponseDTO(savedCategory, cluster.getName());
     }
     
     /**
-     * 获取公司的所有商品分类
+     * 获取集群的所有商品分类
      */
-    public List<ProductCategoryResponseDTO> getProductCategoriesByCompany(Long companyId, String userEmail) {
-        // 验证公司是否存在
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Company not found: " + companyId));
+    public List<ProductCategoryResponseDTO> getProductCategoriesByCluster(Long clusterId, String userEmail) {
+        // 验证集群是否存在
+        Cluster cluster = clusterRepository.findById(clusterId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cluster not found: " + clusterId));
         
-        // 验证用户是否是公司成员
-        permissionUtil.verifyCompanyMember(companyId, userEmail);
+        // 验证用户是否是集群成员
+        permissionUtil.verifyClusterMember(clusterId, userEmail);
         
-        List<ProductCategory> categories = productCategoryRepository.findByCompanyId(companyId);
+        List<ProductCategory> categories = productCategoryRepository.findByClusterId(clusterId);
         return categories.stream()
-                .map(category -> toResponseDTO(category, company.getName()))
+                .map(category -> toResponseDTO(category, cluster.getName()))
                 .collect(Collectors.toList());
     }
     
@@ -75,13 +75,13 @@ public class ProductCategoryService {
         ProductCategory category = productCategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product category not found: " + id));
         
-        // 验证用户是否是公司成员
-        permissionUtil.verifyCompanyMember(category.getCompanyId(), userEmail);
+        // 验证用户是否是集群成员
+        permissionUtil.verifyClusterMember(category.getClusterId(), userEmail);
         
-        Company company = companyRepository.findById(category.getCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+        Cluster cluster = clusterRepository.findById(category.getClusterId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cluster not found"));
         
-        return toResponseDTO(category, company.getName());
+        return toResponseDTO(category, cluster.getName());
     }
     
     /**
@@ -93,17 +93,17 @@ public class ProductCategoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product category not found: " + id));
         
         // 验证用户是否有权限(仅ADMIN)
-        permissionUtil.verifyCompanyAdmin(category.getCompanyId(), userEmail);
+        permissionUtil.verifyClusterAdmin(category.getClusterId(), userEmail);
         
         // 检查分类名称是否被其他分类使用
         if (!category.getName().equals(dto.getName())) {
-            if (productCategoryRepository.findByCompanyIdAndName(category.getCompanyId(), dto.getName()).isPresent()) {
-                throw new IllegalArgumentException("Category name already exists in this company");
+            if (productCategoryRepository.findByClusterIdAndName(category.getClusterId(), dto.getName()).isPresent()) {
+                throw new IllegalArgumentException("Category name already exists in this cluster");
             }
         }
         
-        Company company = companyRepository.findById(category.getCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+        Cluster cluster = clusterRepository.findById(category.getClusterId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cluster not found"));
         
         // 更新分类信息
         category.setName(dto.getName());
@@ -111,7 +111,7 @@ public class ProductCategoryService {
         category.setImage(dto.getImage());
         
         ProductCategory updatedCategory = productCategoryRepository.save(category);
-        return toResponseDTO(updatedCategory, company.getName());
+        return toResponseDTO(updatedCategory, cluster.getName());
     }
     
     /**
@@ -123,7 +123,7 @@ public class ProductCategoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product category not found: " + id));
         
         // 验证用户是否有权限(仅ADMIN)
-        permissionUtil.verifyCompanyAdmin(category.getCompanyId(), userEmail);
+        permissionUtil.verifyClusterAdmin(category.getClusterId(), userEmail);
         
         productCategoryRepository.delete(category);
     }
@@ -135,10 +135,10 @@ public class ProductCategoryService {
         List<ProductCategory> categories = productCategoryRepository.findByCreatorEmail(creatorEmail);
         return categories.stream()
                 .map(category -> {
-                    String companyName = companyRepository.findById(category.getCompanyId())
-                            .map(Company::getName)
+                    String clusterName = clusterRepository.findById(category.getClusterId())
+                            .map(Cluster::getName)
                             .orElse("Unknown");
-                    return toResponseDTO(category, companyName);
+                    return toResponseDTO(category, clusterName);
                 })
                 .collect(Collectors.toList());
     }
@@ -146,14 +146,14 @@ public class ProductCategoryService {
     /**
      * 转换为响应DTO
      */
-    private ProductCategoryResponseDTO toResponseDTO(ProductCategory category, String companyName) {
+    private ProductCategoryResponseDTO toResponseDTO(ProductCategory category, String clusterName) {
         ProductCategoryResponseDTO dto = new ProductCategoryResponseDTO();
         dto.setId(category.getId());
         dto.setName(category.getName());
         dto.setDescription(category.getDescription());
         dto.setImage(category.getImage());
-        dto.setCompanyId(category.getCompanyId());
-        dto.setCompanyName(companyName);
+        dto.setClusterId(category.getClusterId());
+        dto.setClusterName(clusterName);
         dto.setCreatorEmail(category.getCreatorEmail());
         dto.setCreatedAt(category.getCreatedAt());
         dto.setUpdatedAt(category.getUpdatedAt());

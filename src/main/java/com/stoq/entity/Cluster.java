@@ -6,20 +6,20 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "companies")
 @Data
-public class Company {
+public class Cluster {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     @Column(nullable = false, length = 200)
-    private String name; // 公司名称
+    private String name; // 集群名称
     
     @Column(length = 500)
-    private String logo; // 公司Logo URL
+    private String logo; // 集群Logo URL
     
     @Column(nullable = false, length = 500)
-    private String address; // 公司地址
+    private String address; // 集群地址
     
     @Column(nullable = false)
     private Long countryId; // 国家ID
@@ -28,7 +28,7 @@ public class Company {
     private String city; // 城市
     
     @Column(nullable = false, length = 100)
-    private String field; // 公司领域/行业
+    private String field; // 集群领域/行业
     
     @Column(nullable = false)
     private Integer employeeCount; // 员工数

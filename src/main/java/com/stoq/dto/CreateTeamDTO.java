@@ -14,6 +14,6 @@ public class CreateTeamDTO {
     @Size(max = 1000, message = "Description cannot exceed 1000 characters")
     private String description;
     
-    @NotNull(message = "Company ID cannot be empty")
-    private Long companyId;
+    @NotNull(message = "Cluster ID cannot be empty")
+    private Long clusterId;
 }

@@ -9,8 +9,8 @@ public class TeamResponseDTO {
     private String name;
     private String logo;
     private String description;
-    private Long companyId;
-    private String companyName;
+    private Long clusterId;
+    private String clusterName;
     private String creatorEmail;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

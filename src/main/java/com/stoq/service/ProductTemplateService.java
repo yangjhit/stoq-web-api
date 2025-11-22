@@ -33,7 +33,7 @@ public class ProductTemplateService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product category not found: " + dto.getCategoryId()));
         
         // 验证用户是否有权限(仅ADMIN)
-        permissionUtil.verifyCompanyAdmin(category.getCompanyId(), creatorEmail);
+        permissionUtil.verifyClusterAdmin(category.getClusterId(), creatorEmail);
         
         // 检查模板名称是否已存在(在分类内唯一)
         if (productTemplateRepository.findByCategoryIdAndName(dto.getCategoryId(), dto.getName()).isPresent()) {
@@ -72,8 +72,8 @@ public class ProductTemplateService {
         ProductCategory category = productCategoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product category not found: " + categoryId));
         
-        // 验证用户是否是公司成员
-        permissionUtil.verifyCompanyMember(category.getCompanyId(), userEmail);
+        // 验证用户是否是集群成员
+        permissionUtil.verifyClusterMember(category.getClusterId(), userEmail);
         
         List<ProductTemplate> templates = productTemplateRepository.findByCategoryId(categoryId);
         return templates.stream()
@@ -91,8 +91,8 @@ public class ProductTemplateService {
         ProductCategory category = productCategoryRepository.findById(template.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product category not found"));
         
-        // 验证用户是否是公司成员
-        permissionUtil.verifyCompanyMember(category.getCompanyId(), userEmail);
+        // 验证用户是否是集群成员
+        permissionUtil.verifyClusterMember(category.getClusterId(), userEmail);
         
         return toResponseDTO(template, category);
     }
@@ -109,7 +109,7 @@ public class ProductTemplateService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product category not found"));
         
         // 验证用户是否有权限(仅ADMIN)
-        permissionUtil.verifyCompanyAdmin(category.getCompanyId(), userEmail);
+        permissionUtil.verifyClusterAdmin(category.getClusterId(), userEmail);
         
         // 检查模板名称是否被其他模板使用
         if (!template.getName().equals(dto.getName())) {
@@ -151,7 +151,7 @@ public class ProductTemplateService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product category not found"));
         
         // 验证用户是否有权限(仅ADMIN)
-        permissionUtil.verifyCompanyAdmin(category.getCompanyId(), userEmail);
+        permissionUtil.verifyClusterAdmin(category.getClusterId(), userEmail);
         
         productTemplateRepository.delete(template);
     }
@@ -195,7 +195,7 @@ public class ProductTemplateService {
         
         if (category != null) {
             dto.setCategoryName(category.getName());
-            dto.setCompanyId(category.getCompanyId());
+            dto.setClusterId(category.getClusterId());
         }
         
         dto.setCreatorEmail(template.getCreatorEmail());

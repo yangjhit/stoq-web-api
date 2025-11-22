@@ -1,16 +1,16 @@
 package com.stoq.enums;
 /**
- * 公司类型枚举
+ * 集群类型枚举
  */
-public enum CompanyType {
+public enum ClusterType {
     
-    PERSONAL("PERSONAL", "Personal company"),
-    PROFESSIONAL("PROFESSIONAL", "Professional company");
+    PERSONAL("PERSONAL", "Personal cluster"),
+    PROFESSIONAL("PROFESSIONAL", "Professional cluster");
     
     private final String code;
     private final String description;
     
-    CompanyType(String code, String description) {
+    ClusterType(String code, String description) {
         this.code = code;
         this.description = description;
     }
@@ -26,12 +26,12 @@ public enum CompanyType {
     /**
      * 根据code获取枚举
      */
-    public static CompanyType fromCode(String code) {
-        for (CompanyType type : CompanyType.values()) {
+    public static ClusterType fromCode(String code) {
+        for (ClusterType type : ClusterType.values()) {
             if (type.code.equals(code)) {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Unknown company type: " + code);
+        throw new IllegalArgumentException("Unknown cluster type: " + code);
     }
 }

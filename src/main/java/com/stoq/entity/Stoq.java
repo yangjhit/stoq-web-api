@@ -21,12 +21,12 @@ public class Stoq {
     @Column(nullable = false, length = 100)
     private String administrator; // 管理员邮箱或名称
     
-    @Column(nullable = false)
-    private Long companyId; // 所属公司ID
+    @Column(name = "clusterId", nullable = false)
+    private Long clusterId; // 所属集群ID
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "companyId", insertable = false, updatable = false)
-    private Company company; // 所属公司
+    @JoinColumn(name = "clusterId", insertable = false, updatable = false)
+    private Cluster cluster; // 所属集群
     
     @Column(nullable = false, length = 100)
     private String creatorEmail; // 创建者邮箱

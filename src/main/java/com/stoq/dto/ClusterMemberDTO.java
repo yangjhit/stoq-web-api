@@ -4,12 +4,12 @@ import javax.validation.constraints.*;
 import java.time.LocalDateTime;
 
 @Data
-public class CompanyMemberDTO {
+public class ClusterMemberDTO {
     
     private Long id;
     
-    @NotNull(message = "Company ID cannot be empty")
-    private Long companyId;
+    @NotNull(message = "Cluster ID cannot be empty")
+    private Long clusterId;
     
     @NotBlank(message = "User email cannot be empty")
     @Email(message = "Email format is incorrect")

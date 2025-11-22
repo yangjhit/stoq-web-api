@@ -28,7 +28,7 @@ public class StoqController {
      */
     @PostMapping
     @Operation(summary = "Create stoq", 
-               description = "Create a new stoq (warehouse) for a company",
+               description = "Create a new stoq (warehouse) for a cluster",
                security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<StoqResponseDTO> createStoq(@Validated @RequestBody CreateStoqDTO dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -38,16 +38,16 @@ public class StoqController {
     }
     
     /**
-     * Get all stoqs for a specific company
+     * Get all stoqs for a specific cluster
      */
-    @GetMapping("/company/{companyId}")
-    @Operation(summary = "Get stoqs by company", 
-               description = "Get all stoqs for a specific company",
+    @GetMapping("/cluster/{clusterId}")
+    @Operation(summary = "Get stoqs by cluster", 
+               description = "Get all stoqs for a specific cluster",
                security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<List<StoqResponseDTO>> getStoqsByCompany(@PathVariable Long companyId) {
+    public ResponseEntity<List<StoqResponseDTO>> getStoqsByCluster(@PathVariable Long clusterId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
-        List<StoqResponseDTO> stoqs = stoqService.getStoqsByCompany(companyId, userEmail);
+        List<StoqResponseDTO> stoqs = stoqService.getStoqsByCluster(clusterId, userEmail);
         return ResponseEntity.ok(stoqs);
     }
     

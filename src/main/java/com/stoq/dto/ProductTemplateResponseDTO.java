@@ -20,8 +20,8 @@ public class ProductTemplateResponseDTO {
     private String qrCode;
     private Long categoryId;
     private String categoryName;
-    private Long companyId;
-    private String companyName;
+    private Long clusterId;
+    private String clusterName;
     private String creatorEmail;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

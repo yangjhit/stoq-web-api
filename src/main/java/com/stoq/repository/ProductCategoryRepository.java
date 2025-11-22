@@ -9,15 +9,15 @@ import java.util.Optional;
 @Repository
 public interface ProductCategoryRepository extends JpaRepository<ProductCategory, Long> {
     
-    // 根据公司ID查找所有分类
-    List<ProductCategory> findByCompanyId(Long companyId);
+    // 根据集群ID查找所有分类
+    List<ProductCategory> findByClusterId(Long clusterId);
     
-    // 根据ID和公司ID查找分类
-    Optional<ProductCategory> findByIdAndCompanyId(Long id, Long companyId);
+    // 根据ID和集群ID查找分类
+    Optional<ProductCategory> findByIdAndClusterId(Long id, Long clusterId);
     
     // 根据创建者邮箱查找所有分类
     List<ProductCategory> findByCreatorEmail(String creatorEmail);
     
-    // 根据公司ID和分类名称查找
-    Optional<ProductCategory> findByCompanyIdAndName(Long companyId, String name);
+    // 根据集群ID和分类名称查找
+    Optional<ProductCategory> findByClusterIdAndName(Long clusterId, String name);
 }

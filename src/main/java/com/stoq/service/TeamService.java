@@ -1,10 +1,10 @@
 package com.stoq.service;
 import com.stoq.dto.CreateTeamDTO;
 import com.stoq.dto.TeamResponseDTO;
-import com.stoq.entity.Company;
+import com.stoq.entity.Cluster;
 import com.stoq.entity.Team;
 import com.stoq.exception.ResourceNotFoundException;
-import com.stoq.repository.CompanyRepository;
+import com.stoq.repository.ClusterRepository;
 import com.stoq.repository.TeamRepository;
 import com.stoq.util.PermissionUtil;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class TeamService {
     
     private final TeamRepository teamRepository;
-    private final CompanyRepository companyRepository;
+    private final ClusterRepository clusterRepository;
     private final PermissionUtil permissionUtil;
     
     /**
@@ -27,41 +27,41 @@ public class TeamService {
      */
     @Transactional
     public TeamResponseDTO createTeam(CreateTeamDTO dto, String creatorEmail) {
-        // 验证公司是否存在
-        Company company = companyRepository.findById(dto.getCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company not found: " + dto.getCompanyId()));
+        // 验证集群是否存在
+        Cluster cluster = clusterRepository.findById(dto.getClusterId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cluster not found: " + dto.getClusterId()));
         
         // 验证用户是否有权限(仅ADMIN)
-        permissionUtil.verifyCompanyAdmin(dto.getCompanyId(), creatorEmail);
+        permissionUtil.verifyClusterAdmin(dto.getClusterId(), creatorEmail);
         
         // 创建团队实体
         Team team = new Team();
         team.setName(dto.getName());
         team.setLogo(dto.getLogo());
         team.setDescription(dto.getDescription());
-        team.setCompanyId(dto.getCompanyId());
+        team.setClusterId(dto.getClusterId());
         team.setCreatorEmail(creatorEmail);
         
         // 保存团队
         Team savedTeam = teamRepository.save(team);
         
-        return toResponseDTO(savedTeam, company.getName());
+        return toResponseDTO(savedTeam, cluster.getName());
     }
     
     /**
-     * 获取公司的所有团队
+     * 获取集群的所有团队
      */
-    public List<TeamResponseDTO> getTeamsByCompany(Long companyId, String userEmail) {
-        // 验证公司是否存在
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Company not found: " + companyId));
+    public List<TeamResponseDTO> getTeamsByCluster(Long clusterId, String userEmail) {
+        // 验证集群是否存在
+        Cluster cluster = clusterRepository.findById(clusterId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cluster not found: " + clusterId));
         
-        // 验证用户是否是公司成员
-        permissionUtil.verifyCompanyMember(companyId, userEmail);
+        // 验证用户是否是集群成员
+        permissionUtil.verifyClusterMember(clusterId, userEmail);
         
-        List<Team> teams = teamRepository.findByCompanyId(companyId);
+        List<Team> teams = teamRepository.findByClusterId(clusterId);
         return teams.stream()
-                .map(team -> toResponseDTO(team, company.getName()))
+                .map(team -> toResponseDTO(team, cluster.getName()))
                 .collect(Collectors.toList());
     }
     
@@ -72,10 +72,10 @@ public class TeamService {
         List<Team> teams = teamRepository.findByCreatorEmail(creatorEmail);
         return teams.stream()
                 .map(team -> {
-                    String companyName = companyRepository.findById(team.getCompanyId())
-                            .map(Company::getName)
+                    String clusterName = clusterRepository.findById(team.getClusterId())
+                            .map(Cluster::getName)
                             .orElse("Unknown");
-                    return toResponseDTO(team, companyName);
+                    return toResponseDTO(team, clusterName);
                 })
                 .collect(Collectors.toList());
     }
@@ -87,13 +87,13 @@ public class TeamService {
         Team team = teamRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Team not found: " + id));
         
-        // 验证用户是否是公司成员
-        permissionUtil.verifyCompanyMember(team.getCompanyId(), userEmail);
+        // 验证用户是否是集群成员
+        permissionUtil.verifyClusterMember(team.getClusterId(), userEmail);
         
-        Company company = companyRepository.findById(team.getCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+        Cluster cluster = clusterRepository.findById(team.getClusterId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cluster not found"));
         
-        return toResponseDTO(team, company.getName());
+        return toResponseDTO(team, cluster.getName());
     }
     
     /**
@@ -105,10 +105,10 @@ public class TeamService {
                 .orElseThrow(() -> new ResourceNotFoundException("Team not found: " + id));
         
         // 验证用户是否有权限(仅ADMIN)
-        permissionUtil.verifyCompanyAdmin(team.getCompanyId(), userEmail);
+        permissionUtil.verifyClusterAdmin(team.getClusterId(), userEmail);
         
-        Company company = companyRepository.findById(team.getCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+        Cluster cluster = clusterRepository.findById(team.getClusterId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cluster not found"));
         
         // 更新团队信息
         team.setName(dto.getName());
@@ -116,7 +116,7 @@ public class TeamService {
         team.setDescription(dto.getDescription());
         
         Team updatedTeam = teamRepository.save(team);
-        return toResponseDTO(updatedTeam, company.getName());
+        return toResponseDTO(updatedTeam, cluster.getName());
     }
     
     /**
@@ -128,7 +128,7 @@ public class TeamService {
                 .orElseThrow(() -> new ResourceNotFoundException("Team not found: " + id));
         
         // 验证用户是否有权限(仅ADMIN)
-        permissionUtil.verifyCompanyAdmin(team.getCompanyId(), userEmail);
+        permissionUtil.verifyClusterAdmin(team.getClusterId(), userEmail);
         
         teamRepository.delete(team);
     }
@@ -136,14 +136,14 @@ public class TeamService {
     /**
      * 转换为响应DTO
      */
-    private TeamResponseDTO toResponseDTO(Team team, String companyName) {
+    private TeamResponseDTO toResponseDTO(Team team, String clusterName) {
         TeamResponseDTO dto = new TeamResponseDTO();
         dto.setId(team.getId());
         dto.setName(team.getName());
         dto.setLogo(team.getLogo());
         dto.setDescription(team.getDescription());
-        dto.setCompanyId(team.getCompanyId());
-        dto.setCompanyName(companyName);
+        dto.setClusterId(team.getClusterId());
+        dto.setClusterName(clusterName);
         dto.setCreatorEmail(team.getCreatorEmail());
         dto.setCreatedAt(team.getCreatedAt());
         dto.setUpdatedAt(team.getUpdatedAt());

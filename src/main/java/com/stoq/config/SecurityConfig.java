@@ -46,14 +46,14 @@ public class SecurityConfig {
                 // Swagger和H2控制台
                 .antMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                 .antMatchers("/h2-console/**").permitAll()
-                // 公司管理端点需要认证
-                .antMatchers("/companies/**").authenticated()
+                // 集群管理端点需要认证
+                .antMatchers("/clusters/**").authenticated()
                 // 仓库管理端点需要认证
                 .antMatchers("/stoqs/**").authenticated()
                 // 团队管理端点需要认证
                 .antMatchers("/teams/**").authenticated()
-                // 公司成员管理端点需要认证
-                .antMatchers("/company-members/**").authenticated()
+                // 集群成员管理端点需要认证
+                .antMatchers("/cluster-members/**").authenticated()
                 // 团队成员管理端点需要认证
                 .antMatchers("/team-members/**").authenticated()
                 // 商品分类管理端点需要认证

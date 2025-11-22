@@ -1,10 +1,10 @@
 package com.stoq.service;
 import com.stoq.dto.CreateStoqDTO;
 import com.stoq.dto.StoqResponseDTO;
-import com.stoq.entity.Company;
+import com.stoq.entity.Cluster;
 import com.stoq.entity.Stoq;
 import com.stoq.exception.ResourceNotFoundException;
-import com.stoq.repository.CompanyRepository;
+import com.stoq.repository.ClusterRepository;
 import com.stoq.repository.StoqRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,44 +18,44 @@ import java.util.stream.Collectors;
 public class StoqService {
     
     private final StoqRepository stoqRepository;
-    private final CompanyRepository companyRepository;
+    private final ClusterRepository clusterRepository;
     
     /**
      * 创建仓库
      */
     @Transactional
     public StoqResponseDTO createStoq(CreateStoqDTO dto, String creatorEmail) {
-        // 验证公司是否存在且属于当前用户
-        Company company = companyRepository.findByIdAndOwnerEmail(dto.getCompanyId(), creatorEmail)
+        // 验证集群是否存在且属于当前用户
+        Cluster cluster = clusterRepository.findByIdAndOwnerEmail(dto.getClusterId(), creatorEmail)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Company not found or you don't have permission: " + dto.getCompanyId()));
+                        "Cluster not found or you don't have permission: " + dto.getClusterId()));
         
         // 创建仓库实体
         Stoq stoq = new Stoq();
         stoq.setName(dto.getName());
         stoq.setDescription(dto.getDescription());
         stoq.setAdministrator(dto.getAdministrator());
-        stoq.setCompanyId(dto.getCompanyId());
+        stoq.setClusterId(dto.getClusterId());
         stoq.setCreatorEmail(creatorEmail);
         
         // 保存仓库
         Stoq savedStoq = stoqRepository.save(stoq);
         
-        return toResponseDTO(savedStoq, company.getName());
+        return toResponseDTO(savedStoq, cluster.getName());
     }
     
     /**
-     * 获取指定公司的所有仓库
+     * 获取指定集群的所有仓库
      */
-    public List<StoqResponseDTO> getStoqsByCompany(Long companyId, String userEmail) {
-        // 验证公司是否存在且属于当前用户
-        Company company = companyRepository.findByIdAndOwnerEmail(companyId, userEmail)
+    public List<StoqResponseDTO> getStoqsByCluster(Long clusterId, String userEmail) {
+        // 验证集群是否存在且属于当前用户
+        Cluster cluster = clusterRepository.findByIdAndOwnerEmail(clusterId, userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Company not found or you don't have permission: " + companyId));
+                        "Cluster not found or you don't have permission: " + clusterId));
         
-        List<Stoq> stoqs = stoqRepository.findByCompanyId(companyId);
+        List<Stoq> stoqs = stoqRepository.findByClusterId(clusterId);
         return stoqs.stream()
-                .map(stoq -> toResponseDTO(stoq, company.getName()))
+                .map(stoq -> toResponseDTO(stoq, cluster.getName()))
                 .collect(Collectors.toList());
     }
     
@@ -66,10 +66,10 @@ public class StoqService {
         List<Stoq> stoqs = stoqRepository.findByCreatorEmail(creatorEmail);
         return stoqs.stream()
                 .map(stoq -> {
-                    String companyName = companyRepository.findById(stoq.getCompanyId())
-                            .map(Company::getName)
+                    String clusterName = clusterRepository.findById(stoq.getClusterId())
+                            .map(Cluster::getName)
                             .orElse("Unknown");
-                    return toResponseDTO(stoq, companyName);
+                    return toResponseDTO(stoq, clusterName);
                 })
                 .collect(Collectors.toList());
     }
@@ -81,12 +81,12 @@ public class StoqService {
         Stoq stoq = stoqRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Stoq not found: " + id));
         
-        // 验证用户是否有权限访问(必须是公司所有者)
-        Company company = companyRepository.findByIdAndOwnerEmail(stoq.getCompanyId(), userEmail)
+        // 验证用户是否有权限访问(必须是集群所有者)
+        Cluster cluster = clusterRepository.findByIdAndOwnerEmail(stoq.getClusterId(), userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "You don't have permission to access this stoq"));
         
-        return toResponseDTO(stoq, company.getName());
+        return toResponseDTO(stoq, cluster.getName());
     }
     
     /**
@@ -97,27 +97,27 @@ public class StoqService {
         Stoq stoq = stoqRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Stoq not found: " + id));
         
-        // 验证用户是否有权限(必须是公司所有者)
-        Company company = companyRepository.findByIdAndOwnerEmail(stoq.getCompanyId(), userEmail)
+        // 验证用户是否有权限(必须是集群所有者)
+        Cluster cluster = clusterRepository.findByIdAndOwnerEmail(stoq.getClusterId(), userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "You don't have permission to update this stoq"));
         
-        // 如果要更改公司,验证新公司是否属于当前用户
-        if (!stoq.getCompanyId().equals(dto.getCompanyId())) {
-            Company newCompany = companyRepository.findByIdAndOwnerEmail(dto.getCompanyId(), userEmail)
+        // 如果要更改集群,验证新集群是否属于当前用户
+        if (!stoq.getClusterId().equals(dto.getClusterId())) {
+            Cluster newCluster = clusterRepository.findByIdAndOwnerEmail(dto.getClusterId(), userEmail)
                     .orElseThrow(() -> new ResourceNotFoundException(
-                            "New company not found or you don't have permission: " + dto.getCompanyId()));
-            company = newCompany;
+                            "New cluster not found or you don't have permission: " + dto.getClusterId()));
+            cluster = newCluster;
         }
         
         // 更新仓库信息
         stoq.setName(dto.getName());
         stoq.setDescription(dto.getDescription());
         stoq.setAdministrator(dto.getAdministrator());
-        stoq.setCompanyId(dto.getCompanyId());
+        stoq.setClusterId(dto.getClusterId());
         
         Stoq updatedStoq = stoqRepository.save(stoq);
-        return toResponseDTO(updatedStoq, company.getName());
+        return toResponseDTO(updatedStoq, cluster.getName());
     }
     
     /**
@@ -128,8 +128,8 @@ public class StoqService {
         Stoq stoq = stoqRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Stoq not found: " + id));
         
-        // 验证用户是否有权限(必须是公司所有者)
-        companyRepository.findByIdAndOwnerEmail(stoq.getCompanyId(), userEmail)
+        // 验证用户是否有权限(必须是集群所有者)
+        clusterRepository.findByIdAndOwnerEmail(stoq.getClusterId(), userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "You don't have permission to delete this stoq"));
         
@@ -139,14 +139,14 @@ public class StoqService {
     /**
      * 转换为响应DTO
      */
-    private StoqResponseDTO toResponseDTO(Stoq stoq, String companyName) {
+    private StoqResponseDTO toResponseDTO(Stoq stoq, String clusterName) {
         StoqResponseDTO dto = new StoqResponseDTO();
         dto.setId(stoq.getId());
         dto.setName(stoq.getName());
         dto.setDescription(stoq.getDescription());
         dto.setAdministrator(stoq.getAdministrator());
-        dto.setCompanyId(stoq.getCompanyId());
-        dto.setCompanyName(companyName);
+        dto.setClusterId(stoq.getClusterId());
+        dto.setClusterName(clusterName);
         dto.setCreatorEmail(stoq.getCreatorEmail());
         dto.setCreatedAt(stoq.getCreatedAt());
         dto.setUpdatedAt(stoq.getUpdatedAt());

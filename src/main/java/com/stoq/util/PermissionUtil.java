@@ -1,9 +1,9 @@
 package com.stoq.util;
-import com.stoq.entity.Company;
-import com.stoq.entity.CompanyMember;
+import com.stoq.entity.Cluster;
+import com.stoq.entity.ClusterMember;
 import com.stoq.exception.ResourceNotFoundException;
-import com.stoq.repository.CompanyMemberRepository;
-import com.stoq.repository.CompanyRepository;
+import com.stoq.repository.ClusterMemberRepository;
+import com.stoq.repository.ClusterRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,67 +14,67 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PermissionUtil {
     
-    private final CompanyRepository companyRepository;
-    private final CompanyMemberRepository companyMemberRepository;
+    private final ClusterRepository clusterRepository;
+    private final ClusterMemberRepository clusterMemberRepository;
     
     /**
-     * 检查用户是否是公司的ADMIN
+     * 检查用户是否是集群的ADMIN
      */
-    public boolean isCompanyAdmin(Long companyId, String userEmail) {
-        return companyMemberRepository.findByCompanyIdAndUserEmail(companyId, userEmail)
+    public boolean isClusterAdmin(Long clusterId, String userEmail) {
+        return clusterMemberRepository.findByClusterIdAndUserEmail(clusterId, userEmail)
                 .map(member -> "ADMIN".equals(member.getRole()))
                 .orElse(false);
     }
     
     /**
-     * 检查用户是否是公司的ADMIN或MEMBER
+     * 检查用户是否是集群的ADMIN或MEMBER
      */
-    public boolean isCompanyAdminOrMember(Long companyId, String userEmail) {
-        return companyMemberRepository.findByCompanyIdAndUserEmail(companyId, userEmail)
+    public boolean isClusterAdminOrMember(Long clusterId, String userEmail) {
+        return clusterMemberRepository.findByClusterIdAndUserEmail(clusterId, userEmail)
                 .isPresent();
     }
     
     /**
-     * 检查用户是否是公司成员
+     * 检查用户是否是集群成员
      */
-    public boolean isCompanyMember(Long companyId, String userEmail) {
-        return companyMemberRepository.findByCompanyIdAndUserEmail(companyId, userEmail)
+    public boolean isClusterMember(Long clusterId, String userEmail) {
+        return clusterMemberRepository.findByClusterIdAndUserEmail(clusterId, userEmail)
                 .isPresent();
     }
     
     /**
-     * 获取用户在公司中的角色
+     * 获取用户在集群中的角色
      */
-    public String getUserRoleInCompany(Long companyId, String userEmail) {
-        return companyMemberRepository.findByCompanyIdAndUserEmail(companyId, userEmail)
-                .map(CompanyMember::getRole)
+    public String getUserRoleInCluster(Long clusterId, String userEmail) {
+        return clusterMemberRepository.findByClusterIdAndUserEmail(clusterId, userEmail)
+                .map(ClusterMember::getRole)
                 .orElse(null);
     }
     
     /**
-     * 验证用户是否有权限访问公司(必须是ADMIN)
+     * 验证用户是否有权限访问集群(必须是ADMIN)
      */
-    public void verifyCompanyAdmin(Long companyId, String userEmail) {
-        if (!isCompanyAdmin(companyId, userEmail)) {
-            throw new ResourceNotFoundException("You don't have permission to access this company");
+    public void verifyClusterAdmin(Long clusterId, String userEmail) {
+        if (!isClusterAdmin(clusterId, userEmail)) {
+            throw new ResourceNotFoundException("You don't have permission to access this cluster");
         }
     }
     
     /**
-     * 验证用户是否有权限访问公司(ADMIN或MEMBER)
+     * 验证用户是否有权限访问集群(ADMIN或MEMBER)
      */
-    public void verifyCompanyAdminOrMember(Long companyId, String userEmail) {
-        if (!isCompanyAdminOrMember(companyId, userEmail)) {
-            throw new ResourceNotFoundException("You don't have permission to access this company");
+    public void verifyClusterAdminOrMember(Long clusterId, String userEmail) {
+        if (!isClusterAdminOrMember(clusterId, userEmail)) {
+            throw new ResourceNotFoundException("You don't have permission to access this cluster");
         }
     }
     
     /**
-     * 验证用户是否是公司成员
+     * 验证用户是否是集群成员
      */
-    public void verifyCompanyMember(Long companyId, String userEmail) {
-        if (!isCompanyMember(companyId, userEmail)) {
-            throw new ResourceNotFoundException("You are not a member of this company");
+    public void verifyClusterMember(Long clusterId, String userEmail) {
+        if (!isClusterMember(clusterId, userEmail)) {
+            throw new ResourceNotFoundException("You are not a member of this cluster");
         }
     }
 }

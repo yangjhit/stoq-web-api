@@ -9,11 +9,11 @@ import java.util.Optional;
 @Repository
 public interface StoqRepository extends JpaRepository<Stoq, Long> {
     
-    // 根据公司ID查找所有仓库
-    List<Stoq> findByCompanyId(Long companyId);
+    // 根据集群ID查找所有仓库
+    List<Stoq> findByClusterId(Long clusterId);
     
-    // 根据ID和公司ID查找仓库
-    Optional<Stoq> findByIdAndCompanyId(Long id, Long companyId);
+    // 根据ID和集群ID查找仓库
+    Optional<Stoq> findByIdAndClusterId(Long id, Long clusterId);
     
     // 根据创建者邮箱查找所有仓库
     List<Stoq> findByCreatorEmail(String creatorEmail);

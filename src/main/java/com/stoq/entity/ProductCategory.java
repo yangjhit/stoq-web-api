@@ -12,12 +12,12 @@ public class ProductCategory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false)
-    private Long companyId; // 公司ID
+    @Column(name = "clusterId", nullable = false)
+    private Long clusterId; // 集群ID
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "companyId", insertable = false, updatable = false)
-    private Company company;
+    @JoinColumn(name = "clusterId", insertable = false, updatable = false)
+    private Cluster cluster;
     
     @Column(nullable = false, length = 200)
     private String name; // 分类名称

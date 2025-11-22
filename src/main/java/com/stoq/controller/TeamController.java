@@ -28,7 +28,7 @@ public class TeamController {
      */
     @PostMapping
     @Operation(summary = "Create team", 
-               description = "Create a new team for a company (requires ADMIN or MANAGER role)",
+               description = "Create a new team for a cluster (requires ADMIN or MANAGER role)",
                security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<TeamResponseDTO> createTeam(@Validated @RequestBody CreateTeamDTO dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -38,16 +38,16 @@ public class TeamController {
     }
     
     /**
-     * Get all teams for a specific company
+     * Get all teams for a specific cluster
      */
-    @GetMapping("/company/{companyId}")
-    @Operation(summary = "Get teams by company", 
-               description = "Get all teams for a specific company",
+    @GetMapping("/cluster/{clusterId}")
+    @Operation(summary = "Get teams by cluster", 
+               description = "Get all teams for a specific cluster",
                security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<List<TeamResponseDTO>> getTeamsByCompany(@PathVariable Long companyId) {
+    public ResponseEntity<List<TeamResponseDTO>> getTeamsByCluster(@PathVariable Long clusterId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
-        List<TeamResponseDTO> teams = teamService.getTeamsByCompany(companyId, userEmail);
+        List<TeamResponseDTO> teams = teamService.getTeamsByCluster(clusterId, userEmail);
         return ResponseEntity.ok(teams);
     }
     

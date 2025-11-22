@@ -14,6 +14,6 @@ public class CreateProductCategoryDTO {
     
     private String image; // Optional
     
-    @NotNull(message = "Company ID cannot be empty")
-    private Long companyId;
+    @NotNull(message = "Cluster ID cannot be empty")
+    private Long clusterId;
 }

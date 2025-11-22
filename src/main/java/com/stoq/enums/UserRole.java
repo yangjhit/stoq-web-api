@@ -5,7 +5,7 @@ package com.stoq.enums;
  */
 public enum UserRole {
     
-    ADMIN("ADMIN", "Administrator - Full access to company"),
+    ADMIN("ADMIN", "Administrator - Full access to cluster"),
     MEMBER("MEMBER", "Member - No permissions");
     
     private final String code;

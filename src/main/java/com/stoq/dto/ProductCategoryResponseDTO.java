@@ -9,8 +9,8 @@ public class ProductCategoryResponseDTO {
     private String name;
     private String description;
     private String image;
-    private Long companyId;
-    private String companyName;
+    private Long clusterId;
+    private String clusterName;
     private String creatorEmail;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

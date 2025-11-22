@@ -3,10 +3,10 @@ import lombok.Data;
 import javax.validation.constraints.*;
 
 @Data
-public class CreateCompanyDTO {
+public class CreateClusterDTO {
     
-    @NotBlank(message = "Company name cannot be empty")
-    @Size(min = 2, max = 200, message = "Company name must be between 2-200 characters")
+    @NotBlank(message = "Cluster name cannot be empty")
+    @Size(min = 2, max = 200, message = "Cluster name must be between 2-200 characters")
     private String name;
     
     private String logo; // Optional
@@ -30,7 +30,7 @@ public class CreateCompanyDTO {
     @Min(value = 1, message = "Employee count must be at least 1")
     private Integer employeeCount;
     
-    @NotBlank(message = "Company type cannot be empty")
+    @NotBlank(message = "Cluster type cannot be empty")
     @Pattern(regexp = "^(PERSONAL|PROFESSIONAL)$", message = "Type must be PERSONAL or PROFESSIONAL")
     private String type;
     

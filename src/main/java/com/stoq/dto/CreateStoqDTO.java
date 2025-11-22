@@ -16,6 +16,6 @@ public class CreateStoqDTO {
     @Size(min = 2, max = 100, message = "Administrator must be between 2-100 characters")
     private String administrator;
     
-    @NotNull(message = "Company ID cannot be empty")
-    private Long companyId;
+    @NotNull(message = "Cluster ID cannot be empty")
+    private Long clusterId;
 }

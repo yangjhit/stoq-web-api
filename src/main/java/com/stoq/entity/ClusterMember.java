@@ -4,22 +4,22 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "company_members", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"companyId", "userEmail"})
+@Table(name = "cluster_members", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"clusterId", "userEmail"})
 })
 @Data
-public class CompanyMember {
+public class ClusterMember {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false)
-    private Long companyId; // 公司ID
+    @Column(name = "clusterId", nullable = false)
+    private Long clusterId; // 集群ID
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "companyId", insertable = false, updatable = false)
-    private Company company;
+    @JoinColumn(name = "clusterId", insertable = false, updatable = false)
+    private Cluster cluster;
     
     @Column(nullable = false, length = 100)
     private String userEmail; // 用户邮箱

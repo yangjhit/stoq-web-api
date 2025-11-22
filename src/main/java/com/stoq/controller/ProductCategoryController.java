@@ -28,7 +28,7 @@ public class ProductCategoryController {
      */
     @PostMapping
     @Operation(summary = "Create product category", 
-               description = "Create a new product category for a company (requires ADMIN role)",
+               description = "Create a new product category for a cluster (requires ADMIN role)",
                security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ProductCategoryResponseDTO> createProductCategory(@Validated @RequestBody CreateProductCategoryDTO dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -38,16 +38,16 @@ public class ProductCategoryController {
     }
     
     /**
-     * Get all product categories for a specific company
+     * Get all product categories for a specific cluster
      */
-    @GetMapping("/company/{companyId}")
-    @Operation(summary = "Get product categories by company", 
-               description = "Get all product categories for a specific company",
+    @GetMapping("/cluster/{clusterId}")
+    @Operation(summary = "Get product categories by cluster", 
+               description = "Get all product categories for a specific cluster",
                security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<List<ProductCategoryResponseDTO>> getProductCategoriesByCompany(@PathVariable Long companyId) {
+    public ResponseEntity<List<ProductCategoryResponseDTO>> getProductCategoriesByCluster(@PathVariable Long clusterId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
-        List<ProductCategoryResponseDTO> categories = productCategoryService.getProductCategoriesByCompany(companyId, userEmail);
+        List<ProductCategoryResponseDTO> categories = productCategoryService.getProductCategoriesByCluster(clusterId, userEmail);
         return ResponseEntity.ok(categories);
     }
     
