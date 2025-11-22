@@ -38,6 +38,7 @@ public class SecurityConfig {
             .authorizeRequests()
                 // 公开端点 - 不需要认证
                 .antMatchers("/users/send-verification-code").permitAll()
+                .antMatchers("/users/send-reset-code").permitAll()
                 .antMatchers("/users/get-verification-code").permitAll()
                 .antMatchers("/users/register").permitAll()
                 .antMatchers("/users/login").permitAll()
