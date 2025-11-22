@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -32,16 +34,19 @@ public class UserController {
     
     @Autowired
     private EmailService emailService;
-    
+
+    @Autowired
+    private MessageSource messageSource;
+
     /**
      * Send verification code to email
      */
     @PostMapping("/send-verification-code")
     @Operation(summary = "Send verification code", description = "Send a 6-digit verification code to the specified email")
     public ResponseEntity<Map<String, String>> sendVerificationCode(@Validated @RequestBody SendVerificationCodeDTO dto) {
-        verificationCodeService.generateAndSendCode(dto.getEmail(), dto.getScenario());
+        verificationCodeService.generateAndSendCode(dto.getEmail(), dto.getScenario(), LocaleContextHolder.getLocale());
         Map<String, String> response = new HashMap<>();
-        response.put("message", "Verification code sent to: " + dto.getEmail());
+        response.put("message", messageSource.getMessage("verification.sent", new Object[]{dto.getEmail()}, LocaleContextHolder.getLocale()));
         response.put("email", dto.getEmail());
         response.put("scenario", dto.getScenario());
         return ResponseEntity.ok(response);
@@ -59,12 +64,12 @@ public class UserController {
             response.put("email", email);
             response.put("scenario", scenario);
             response.put("verificationCode", code);
-            response.put("message", "Verification code retrieved successfully");
+            response.put("message", messageSource.getMessage("verification.retrieved", null, LocaleContextHolder.getLocale()));
             return ResponseEntity.ok(response);
         } else {
             response.put("email", email);
             response.put("scenario", scenario);
-            response.put("message", "Verification code not found, please send it first");
+            response.put("message", messageSource.getMessage("verification.not-found", null, LocaleContextHolder.getLocale()));
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
     }
@@ -89,7 +94,7 @@ public class UserController {
         Map<String, Object> response = new HashMap<>();
         response.put("token", loginResponse.getToken());
         response.put("user", loginResponse);
-        response.put("message", "Login successful");
+        response.put("message", messageSource.getMessage("login.success", null, LocaleContextHolder.getLocale()));
         return ResponseEntity.ok(response);
     }
     
@@ -101,7 +106,7 @@ public class UserController {
     public ResponseEntity<Map<String, String>> resetPassword(@Validated @RequestBody ResetPasswordDTO dto) {
         userService.resetPassword(dto);
         Map<String, String> response = new HashMap<>();
-        response.put("message", "Password reset successfully, please login with new password");
+        response.put("message", messageSource.getMessage("password.reset", null, LocaleContextHolder.getLocale()));
         response.put("email", dto.getEmail());
         return ResponseEntity.ok(response);
     }
@@ -115,7 +120,7 @@ public class UserController {
         String newToken = userService.refreshToken(dto.getToken());
         Map<String, String> response = new HashMap<>();
         response.put("token", newToken);
-        response.put("message", "Token refreshed successfully, new token valid for 24 hours");
+        response.put("message", messageSource.getMessage("token.refreshed", null, LocaleContextHolder.getLocale()));
         return ResponseEntity.ok(response);
     }
     

@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "companies")
+@Table(name = "clusters")
 @Data
 public class Cluster {
     

@@ -1,5 +1,6 @@
 package com.stoq.config;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.mail.MailProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -9,27 +10,29 @@ import java.util.Properties;
 
 @Configuration
 public class MailConfig {
-    
+    private final MailProperties mailProperties;
+
+    public MailConfig(MailProperties mailProperties) {
+        this.mailProperties = mailProperties;
+    }
+
     /**
      * 配置JavaMailSender,支持开发环境和生产环境
      */
     @Bean
-    @ConditionalOnProperty(name = "spring.mail.host", havingValue = "smtp.gmail.com", matchIfMissing = false)
+    @ConditionalOnProperty(prefix = "spring.mail", name = "host")
     public JavaMailSender javaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("smtp.gmail.com");
-        mailSender.setPort(587);
-        mailSender.setUsername("your-email@gmail.com");
-        mailSender.setPassword("your-app-password");
-        
+        mailSender.setHost(mailProperties.getHost());
+        mailSender.setPort(mailProperties.getPort());
+        mailSender.setUsername(mailProperties.getUsername());
+        mailSender.setPassword(mailProperties.getPassword());
+        if (mailProperties.getProtocol() != null) {
+            mailSender.setProtocol(mailProperties.getProtocol());
+        }
+
         Properties props = mailSender.getJavaMailProperties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.starttls.required", "true");
-        props.put("mail.smtp.connectiontimeout", "5000");
-        props.put("mail.smtp.timeout", "5000");
-        props.put("mail.smtp.writetimeout", "5000");
-        
+        props.putAll(mailProperties.getProperties());
         return mailSender;
     }
 }

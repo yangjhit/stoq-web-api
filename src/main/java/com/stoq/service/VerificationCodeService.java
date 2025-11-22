@@ -6,10 +6,12 @@ import com.stoq.exception.ResourceNotFoundException;
 import com.stoq.repository.VerificationCodeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Random;
 
 @Service
@@ -21,12 +23,13 @@ public class VerificationCodeService {
     private final EmailService emailService;
     private final RedisVerificationCodeService redisVerificationCodeService;
     private final Random random = new Random();
-    
+    private final MessageSource messageSource;
+
     /**
      * 生成并发送验证码(支持场景)
      */
     @Transactional
-    public void generateAndSendCode(String email, String scenario) {
+    public void generateAndSendCode(String email, String scenario, Locale locale) {
         // 1. 生成6位随机验证码
         String code = generateCode();
         
@@ -45,7 +48,7 @@ public class VerificationCodeService {
         }
         
         // 3. 发送验证码邮件
-        emailService.sendVerificationCode(email, code);
+        emailService.sendVerificationCode(email, code, locale);
     }
     
     /**
@@ -66,12 +69,12 @@ public class VerificationCodeService {
         // 2. 备份方案: 从数据库验证
         VerificationCode verificationCode = verificationCodeRepository
                 .findByEmailAndCodeAndScenario(email, code, scenario)
-                .orElseThrow(() -> new ResourceNotFoundException("验证码不正确或已过期"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("error.verification.invalid", null, LocaleContextHolder.getLocale())));
+
         // 检查是否过期
         if (LocalDateTime.now().isAfter(verificationCode.getExpiresAt())) {
             verificationCodeRepository.delete(verificationCode);
-            throw new ResourceNotFoundException("验证码已过期");
+            throw new ResourceNotFoundException(messageSource.getMessage("error.verification.expired", null, LocaleContextHolder.getLocale()));
         }
         
         // 验证成功后立即删除验证码

@@ -2,6 +2,7 @@ package com.stoq.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,10 @@ public class EmailService {
     
     @Autowired(required = false)
     private JavaMailSender mailSender;
-    
+
+    @Value("${stoq.mail.from-address:${spring.mail.username:}}")
+    private String fromAddress;
+
     // 验证码存储(用于测试和备份)
     private static final Map<String, String> verificationCodeStorage = new HashMap<>();
     
@@ -46,7 +50,9 @@ public class EmailService {
     private void sendRealEmail(String email, String code) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("noreply@stoq.com");
+            if (fromAddress != null && !fromAddress.isBlank()) {
+                message.setFrom(fromAddress);
+            }
             message.setTo(email);
             message.setSubject("Stoq 用户注册验证码");
             message.setText(buildVerificationCodeEmailBody(code));
