@@ -7,6 +7,7 @@ import com.stoq.dto.UserResponseDTO;
 import com.stoq.entity.User;
 import com.stoq.exception.EmailAlreadyExistsException;
 import com.stoq.exception.ResourceNotFoundException;
+import com.stoq.enums.VerificationCodeScenario;
 import com.stoq.repository.UserRepository;
 import com.stoq.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class UserService {
     @Transactional
     public UserResponseDTO registerUser(UserRegistrationDTO dto) {
         // 1. 验证邮箱验证码(注册场景)
-        verificationCodeService.verifyCode(dto.getEmail(), dto.getVerificationCode(), "REGISTER");
+        verificationCodeService.verifyCode(dto.getEmail(), dto.getVerificationCode(), VerificationCodeScenario.REGISTER.getCode());
         
         // 2. 检查邮箱是否已存在
         if (userRepository.existsByEmail(dto.getEmail())) {
@@ -182,7 +183,7 @@ public class UserService {
                 ));
 
         // 3. 验证邮箱验证码(重置密码场景)
-        verificationCodeService.verifyCode(dto.getEmail(), dto.getVerificationCode(), "RESET_PASSWORD");
+        verificationCodeService.verifyCode(dto.getEmail(), dto.getVerificationCode(), VerificationCodeScenario.RESET_PASSWORD.getCode());
         
         // 4. 更新密码 (使用BCrypt加密)
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
