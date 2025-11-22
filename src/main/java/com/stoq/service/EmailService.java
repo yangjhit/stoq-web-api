@@ -3,11 +3,14 @@ package com.stoq.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 @Service
@@ -20,20 +23,23 @@ public class EmailService {
     @Value("${stoq.mail.from-address:${spring.mail.username:}}")
     private String fromAddress;
 
+    @Autowired
+    private MessageSource messageSource;
+
     // 验证码存储(用于测试和备份)
     private static final Map<String, String> verificationCodeStorage = new HashMap<>();
     
     /**
-     * 发送验证码邮件
+     * 发送验证码邮件(支持国际化)
      */
-    public void sendVerificationCode(String email, String code) {
+    public void sendVerificationCode(String email, String code, Locale locale) {
         // 总是存储验证码到内存(用于测试)
         verificationCodeStorage.put(email, code);
         
         // 尝试发送真实邮件
         if (mailSender != null) {
             try {
-                sendRealEmail(email, code);
+                sendRealEmail(email, code, locale);
             } catch (Exception e) {
                 log.warn("⚠️ 真实邮件发送失败,但验证码已保存。错误: {}", e.getMessage());
                 log.info("💡 开发提示: 验证码已存储在内存中,可以通过 /api/users/get-verification-code 接口获取");
@@ -43,20 +49,27 @@ public class EmailService {
             log.info("💡 提示: 邮件服务未配置,验证码已存储在内存中。可以通过 /api/users/get-verification-code 接口获取");
         }
     }
-    
+
+    /**
+     * 兼容旧调用,默认使用系统Locale
+     */
+    public void sendVerificationCode(String email, String code) {
+        sendVerificationCode(email, code, LocaleContextHolder.getLocale());
+    }
+
     /**
      * 真实发送邮件
      */
-    private void sendRealEmail(String email, String code) {
+    private void sendRealEmail(String email, String code, Locale locale) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             if (fromAddress != null && !fromAddress.isBlank()) {
                 message.setFrom(fromAddress);
             }
             message.setTo(email);
-            message.setSubject("Stoq 用户注册验证码");
-            message.setText(buildVerificationCodeEmailBody(code));
-            
+            message.setSubject(messageSource.getMessage("email.subject.verification", null, locale));
+            message.setText(messageSource.getMessage("email.body.verification", new Object[]{code}, locale));
+
             mailSender.send(message);
             log.info("✅ 验证码邮件已发送到: {}", email);
         } catch (Exception e) {

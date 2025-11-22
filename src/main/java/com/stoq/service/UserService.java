@@ -10,6 +10,8 @@ import com.stoq.exception.ResourceNotFoundException;
 import com.stoq.repository.UserRepository;
 import com.stoq.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +27,8 @@ public class UserService {
     private final VerificationCodeService verificationCodeService;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
-    
+    private final MessageSource messageSource;
+
     /**
      * 用户注册 (验证码在注册时提供)
      */
@@ -36,7 +39,9 @@ public class UserService {
         
         // 2. 检查邮箱是否已存在
         if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new EmailAlreadyExistsException("邮箱已被注册: " + dto.getEmail());
+            throw new EmailAlreadyExistsException(
+                    messageSource.getMessage("error.user.exists", new Object[]{dto.getEmail()}, LocaleContextHolder.getLocale())
+            );
         }
         
         // 3. 创建用户实体
@@ -65,7 +70,9 @@ public class UserService {
      */
     public UserResponseDTO getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("用户不存在: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        messageSource.getMessage("error.user.not-found", new Object[]{email}, LocaleContextHolder.getLocale())
+                ));
         return convertToResponseDTO(user);
     }
     
@@ -84,11 +91,15 @@ public class UserService {
     @Transactional
     public UserResponseDTO updateUser(String email, UserRegistrationDTO dto) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("用户不存在: " + email));
-        
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        messageSource.getMessage("error.user.not-found", new Object[]{email}, LocaleContextHolder.getLocale())
+                ));
+
         // 如果要修改邮箱,需要检查新邮箱是否已存在
         if (!email.equals(dto.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
-            throw new EmailAlreadyExistsException("邮箱已被注册: " + dto.getEmail());
+            throw new EmailAlreadyExistsException(
+                    messageSource.getMessage("error.user.exists", new Object[]{dto.getEmail()}, LocaleContextHolder.getLocale())
+            );
         }
         
         // 更新用户信息
@@ -110,7 +121,9 @@ public class UserService {
     @Transactional
     public void deleteUser(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("用户不存在: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        messageSource.getMessage("error.user.not-found", new Object[]{email}, LocaleContextHolder.getLocale())
+                ));
         userRepository.delete(user);
     }
     
@@ -120,11 +133,15 @@ public class UserService {
     public LoginResponseDTO login(LoginDTO dto) {
         // 1. 查找用户
         User user = userRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + dto.getEmail()));
-        
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        messageSource.getMessage("error.user.not-found", new Object[]{dto.getEmail()}, LocaleContextHolder.getLocale())
+                ));
+
         // 2. 验证密码 (使用BCrypt比较)
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            throw new ResourceNotFoundException("Invalid email or password");
+            throw new ResourceNotFoundException(
+                    messageSource.getMessage("error.login.invalid", null, LocaleContextHolder.getLocale())
+            );
         }
         
         // 3. 生成JWT token
@@ -153,13 +170,17 @@ public class UserService {
     public void resetPassword(ResetPasswordDTO dto) {
         // 1. 验证两次密码是否一致
         if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
-            throw new IllegalArgumentException("两次输入的密码不一致");
+            throw new IllegalArgumentException(
+                    messageSource.getMessage("error.password.mismatch", null, LocaleContextHolder.getLocale())
+            );
         }
         
         // 2. 查找用户(先检查用户是否存在)
         User user = userRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("用户不存在: " + dto.getEmail()));
-        
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        messageSource.getMessage("error.user.not-found", new Object[]{dto.getEmail()}, LocaleContextHolder.getLocale())
+                ));
+
         // 3. 验证邮箱验证码(重置密码场景)
         verificationCodeService.verifyCode(dto.getEmail(), dto.getVerificationCode(), "RESET_PASSWORD");
         
