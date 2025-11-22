@@ -66,7 +66,7 @@ logs/
 hs_err_pid*
 
 # Docker
-.env
+# .env
 backups/
 
 # 运行时生成的文件
