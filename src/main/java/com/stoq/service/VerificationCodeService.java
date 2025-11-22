@@ -30,26 +30,28 @@ public class VerificationCodeService {
      * 生成并发送验证码(支持场景)
      */
     @Transactional
-    public void generateAndSendCode(String email, String scenario, Locale locale) {
+    public String generateAndSendCode(String email, String scenario, Locale locale) {
+        String scenarioCode = normalizeScenario(scenario);
         // 1. 生成6位随机验证码
         String code = generateCode();
         
         // 2. 保存到Redis (优先使用Redis)
         try {
-            redisVerificationCodeService.saveVerificationCode(email, code, scenario);
+            redisVerificationCodeService.saveVerificationCode(email, code, scenarioCode);
         } catch (Exception e) {
             log.warn("⚠️ Redis保存验证码失败,使用数据库备份: {}", e.getMessage());
             // 备份方案: 保存到数据库
-            verificationCodeRepository.deleteByEmailAndScenario(email, scenario);
+            verificationCodeRepository.deleteByEmailAndScenario(email, scenarioCode);
             VerificationCode verificationCode = new VerificationCode();
             verificationCode.setEmail(email);
             verificationCode.setCode(code);
-            verificationCode.setScenario(scenario);
+            verificationCode.setScenario(scenarioCode);
             verificationCodeRepository.save(verificationCode);
         }
         
         // 3. 发送验证码邮件
         emailService.sendVerificationCode(email, code, locale);
+        return scenarioCode;
     }
     
     /**
@@ -57,10 +59,11 @@ public class VerificationCodeService {
      */
     @Transactional
     public boolean verifyCode(String email, String code, String scenario) {
+        String scenarioCode = normalizeScenario(scenario);
         // 1. 优先从Redis验证
         try {
-            if (redisVerificationCodeService.verifyCode(email, code, scenario)) {
-                log.info("✅ 验证码已从Redis验证: {} (场景: {})", email, scenario);
+            if (redisVerificationCodeService.verifyCode(email, code, scenarioCode)) {
+                log.info("✅ 验证码已从Redis验证: {} (场景: {})", email, scenarioCode);
                 return true;
             }
         } catch (Exception e) {
@@ -69,7 +72,7 @@ public class VerificationCodeService {
         
         // 2. 备份方案: 从数据库验证
         VerificationCode verificationCode = verificationCodeRepository
-                .findByEmailAndCodeAndScenario(email, code, scenario)
+                .findByEmailAndCodeAndScenario(email, code, scenarioCode)
                 .orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("error.verification.invalid", null, LocaleContextHolder.getLocale())));
 
         // 检查是否过期
@@ -109,5 +112,15 @@ public class VerificationCodeService {
     private String generateCode() {
         int code = 100000 + random.nextInt(900000);
         return String.valueOf(code);
+    }
+
+    /**
+     * 统一验证码场景大小写并校验合法性
+     */
+    private String normalizeScenario(String scenario) {
+        if (scenario == null) {
+            throw new IllegalArgumentException("Scenario cannot be null");
+        }
+        return VerificationCodeScenario.fromCode(scenario.toUpperCase()).getCode();
     }
 }

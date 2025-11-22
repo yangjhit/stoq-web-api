@@ -44,11 +44,27 @@ public class UserController {
     @PostMapping("/send-verification-code")
     @Operation(summary = "Send verification code", description = "Send a 6-digit verification code to the specified email")
     public ResponseEntity<Map<String, String>> sendVerificationCode(@Validated @RequestBody SendVerificationCodeDTO dto) {
-        verificationCodeService.generateAndSendCode(dto.getEmail(), dto.getScenario(), LocaleContextHolder.getLocale());
+        String normalizedScenario = verificationCodeService.generateAndSendCode(dto.getEmail(),
+                com.stoq.enums.VerificationCodeScenario.REGISTER.getCode(), LocaleContextHolder.getLocale());
         Map<String, String> response = new HashMap<>();
         response.put("message", messageSource.getMessage("verification.sent", new Object[]{dto.getEmail()}, LocaleContextHolder.getLocale()));
         response.put("email", dto.getEmail());
-        response.put("scenario", dto.getScenario());
+        response.put("scenario", normalizedScenario);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Send verification code for password reset
+     */
+    @PostMapping("/send-reset-code")
+    @Operation(summary = "Send reset password code", description = "Send a 6-digit verification code for password reset to the specified email")
+    public ResponseEntity<Map<String, String>> sendResetCode(@Validated @RequestBody SendVerificationCodeDTO dto) {
+        String normalizedScenario = verificationCodeService.generateAndSendCode(dto.getEmail(),
+                com.stoq.enums.VerificationCodeScenario.RESET_PASSWORD.getCode(), LocaleContextHolder.getLocale());
+        Map<String, String> response = new HashMap<>();
+        response.put("message", messageSource.getMessage("verification.sent", new Object[]{dto.getEmail()}, LocaleContextHolder.getLocale()));
+        response.put("email", dto.getEmail());
+        response.put("scenario", normalizedScenario);
         return ResponseEntity.ok(response);
     }
     
