@@ -1,0 +1,103 @@
+services:
+  # MySQL数据库服务
+  mysql:
+    image: mysql:8.0
+    container_name: stoq-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password_123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-stoqdb}
+      MYSQL_USER: ${MYSQL_USER:-stoquser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-stoq_password_123}
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$${MYSQL_ROOT_PASSWORD:-root_password_123}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - stoq-network
+  # Redis服务
+  redis:
+    image: redis:7-alpine
+    container_name: stoq-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - stoq-network
+
+  # Spring Boot应用服务
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stoq-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # 数据库配置
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/stoqdb?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: stoquser
+      SPRING_DATASOURCE_PASSWORD: stoq_password_123
+      SPRING_DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
+      
+      # Redis配置
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      
+      # JPA配置
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "false"
+      HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
+      
+      # JWT配置
+      JWT_SECRET: stoq-web-api-secret-key-2024-very-long-secret-key-for-jwt-token-generation-must-be-at-least-512-bits-long-for-hs512-algorithm
+      JWT_EXPIRATION: 86400000
+      
+      # 日志配置
+      LOGGING_LEVEL_ROOT: INFO
+      LOGGING_LEVEL_COM_STOQ: DEBUG
+      
+      # JVM配置
+      JAVA_OPTS: -Xms256m -Xmx512m -XX:+UseG1GC
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - stoq-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v3/api-docs"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+
+# 网络配置
+networks:
+  stoq-network:
+    driver: bridge
+
+# 数据卷配置
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local

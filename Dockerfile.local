@@ -1,0 +1,24 @@
+# 本地构建版本 Dockerfile
+# 使用本地已有的 Maven 镜像（包含 Java 运行时）
+# 完全避免 Docker 构建的网络问题
+
+FROM maven:3.8.6-openjdk-11-slim
+
+WORKDIR /app
+
+# 直接复制本地构建的 JAR 文件
+COPY target/stoq-web-api-1.0.0.jar app.jar
+
+EXPOSE 8080
+
+ENV JAVA_OPTS="-Xms256m -Xmx512m"
+
+# 安装 curl 用于健康检查（maven 镜像已包含 curl）
+# RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:8080/api/v3/api-docs || exit 1
+
+# 启动应用
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
