@@ -78,8 +78,8 @@ services:
       SPRING_REDIS_PORT: 6379
       SPRING_REDIS_PASSWORD: ${SPRING_REDIS_PASSWORD}
       
-      # JPA配置（生产环境使用 validate，不自动修改数据库结构）
-      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      # JPA配置（允许通过环境变量控制，默认 validate）
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-validate}
       SPRING_JPA_SHOW_SQL: "false"
       HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
       
