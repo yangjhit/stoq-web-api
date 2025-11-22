@@ -1,6 +1,6 @@
 -- 创建数据库（如果不存在）
-CREATE DATABASE IF NOT EXISTS stoqdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE stoqdb;
+CREATE DATABASE IF NOT EXISTS bafid-stoq CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE stoq-db-user;
 
 -- 设置时区
 SET time_zone = '+08:00';
