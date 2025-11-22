@@ -27,12 +27,16 @@ RUN mkdir -p /root/.m2 && \
 </settings>
 EOF
 
-# 复制pom.xml和源代码
+# 预先复制项目元数据以利用缓存，优先把依赖拉到本地
 COPY pom.xml .
+# 如果需要自定义 settings.xml，可在此处覆盖 /root/.m2/settings.xml
+RUN mvn -s /root/.m2/settings.xml -B dependency:go-offline
+
+# 再复制源代码
 COPY src ./src
 
-# 构建应用（跳过测试以加快构建速度）
-RUN mvn clean package -DskipTests -q
+# 构建应用（跳过测试；依赖已预下载，仍允许联网以保证缺失依赖能取到）
+RUN mvn -s /root/.m2/settings.xml clean package -DskipTests -q
 
 # 多阶段构建 - 第二阶段：运行应用
 FROM eclipse-temurin:11-jre
